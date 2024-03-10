@@ -1,3 +1,4 @@
+name: Build & Release
 on:
   push:
     branches:
@@ -7,32 +8,24 @@ permissions:
   contents: write
   pull-requests: write
 
-name: release-please
-
 jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install Pkl
-        run: |-
-          curl -L -o pkl https://github.com/apple/pkl/releases/download/0.25.2/pkl-linux-amd64
-          chmod +x pkl
-          ./pkl --version
-          mkdir -p $HOME/.local/bin
-          mv pkl $HOME/.local/bin/pkl
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+        uses: pkl-community/setup-pkl@v0
+        with:
+          pkl-version: 0.25.2
       - name: Build Package
         run: pkl project package src
       - uses: google-github-actions/release-please-action@v4
         id: release
-        with:
-          release-type: simple
       - name: Upload Release Artifact
         if: ${{ steps.release.outputs.release_created }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG=${{ steps.release.outputs.tag_name }}
-          VERSION=${TAG:1}
-          gh release upload ${{ steps.release.outputs.tag_name }} .out/pkl-biome@$VERSION/*
+          gh release upload ${{ steps.release.outputs.tag_name }} .out/$TAG/*
+          gh release edit ${{ steps.release.outputs.tag_name }} -t ${{ steps.release.outputs.tag_name }}
