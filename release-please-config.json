@@ -1,0 +1,10 @@
+{
+	"release-type": "simple",
+	"packages": {
+		".": {
+			"package-name": "<your-package>",
+			"include-v-in-tag": false,
+			"tag-separator": "@"
+		}
+	}
+}
